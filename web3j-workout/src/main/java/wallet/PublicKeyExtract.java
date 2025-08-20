@@ -21,7 +21,7 @@ public class PublicKeyExtract {
         생성된 지갑 주소 = 0x658b8a1ae242d0460d4777e17c9af438daab4f77
         --- 지갑 주소 생성 완료 ---
         --- Private Key, Public Key 확인 ---
-        privateKey = 0x4acdd58a6ccf6f4eceb0b158726689e0ad21beb7afabe2262a8790b39b55ca85
+        privateKey =
         publicKey = 0x376db746fb37456556a2c0018d876fbc5e61f9d60dec7f9f21132b2d7a19e71d5a7b81bcd29ded77b7b489f2e0e043998e385809f9779133938065190f351a91
 
          */
@@ -33,7 +33,7 @@ public class PublicKeyExtract {
         // 방법 1. Credentials에서 추출
         System.out.println("=== 방법 1. Credentials에서 추출 시작 ===");
 
-        String privateKey = "0x4acdd58a6ccf6f4eceb0b158726689e0ad21beb7afabe2262a8790b39b55ca85";
+        String privateKey = System.getenv("PRIVATE_KEY");
 
         // Private Key로 Credentials 추출하기
         Credentials credentials = Credentials.create(privateKey);

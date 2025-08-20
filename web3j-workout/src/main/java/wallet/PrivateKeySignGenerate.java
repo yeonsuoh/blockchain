@@ -16,7 +16,7 @@ public class PrivateKeySignGenerate {
 
     public static void main(String[] args) throws SignatureException {
 
-        String privateKey = "0x4acdd58a6ccf6f4eceb0b158726689e0ad21beb7afabe2262a8790b39b55ca85";
+        String privateKey = System.getenv("PRIVATE_KEY");
 
         // Private key로 서명을 위한 Credentials 생성
         Credentials credentials = Credentials.create(privateKey);
