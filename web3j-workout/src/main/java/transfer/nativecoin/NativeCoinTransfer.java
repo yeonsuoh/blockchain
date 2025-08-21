@@ -1,4 +1,4 @@
-package transfer;
+package transfer.nativecoin;
 
 import java.math.BigDecimal;
 import org.web3j.crypto.Credentials;
@@ -23,7 +23,7 @@ public class NativeCoinTransfer {
         // faucet 이용, ethereum sepolia 발급받음
 
         // https://developer.metamask.io/
-        // api key 얻음 - cbc3bffb4dd24160aef803fb94436c28
+        // api key 얻음
 
         // Sepolia 테스트넷 (테스트 ETH 사용)
 

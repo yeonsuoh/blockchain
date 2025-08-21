@@ -1,4 +1,4 @@
-package transfer;
+package transfer.nativecoin;
 
 import java.io.IOException;
 import java.math.BigInteger;
