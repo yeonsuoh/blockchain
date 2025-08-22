@@ -64,7 +64,3 @@
     - transferFrom  
 
 ---
-
-
-## [참고]
-https://bsc-testnet.infura.io/v3/ff3d0a25dafc4bfda7cb700771d89273
