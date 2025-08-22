@@ -11,52 +11,82 @@ import org.web3j.tx.RawTransactionManager;
 import org.web3j.tx.gas.StaticGasProvider;
 import org.web3j.utils.Convert;
 
+/**
+ * ERC20 토큰 전송 실습
+ * 
+ * ERC20 토큰 전송 과정
+ * 1. 블록체인 네트워크 연결 (BSC Testnet)
+ * 2. 지갑 인증 정보 설정 (Private Key)
+ * 3. 트랜잭션 매니저 및 가스 설정
+ * 4. ERC20 컨트랙트 로드
+ * 5. transfer() 함수 호출로 토큰 전송
+ */
 public class ERC20TokenTransfer {
-
 
     /**
      * 4. ERC20 토큰 전송
      * 4.1 ERC20 토큰 전송 (from, to, amount)
+     * 
+     * 네이티브 코인 전송과의 차이점
+     * - 네이티브 코인 : 블록체인 자체 화폐 (BNB, ETH 등)
+     * - ERC20 토큰 : 스마트 컨트랙트로 구현된 토큰 (USDT, USDC 등)
      */
     public static void main(String[] args) throws Exception {
-        String privateKey = System.getenv("PRIVATE_KEY");
-        String infuraKey = System.getenv("INFURA_PROJECT_ID");
+        String privateKey = System.getenv("PRIVATE_KEY");     // 지갑 개인키
+        String infuraKey = System.getenv("INFURA_PROJECT_ID"); // Infura API 키
 
+        // BSC 테스트넷 RPC URL 구성
         String bscTestnetUrl = "https://bsc-testnet.infura.io/v3/" + infuraKey;
-        // Web3를 블록체인에 연결하기
+        
+        // Web3j 인스턴스 생성 - 블록체인과의 통신 담당
         Web3j web3 = Web3j.build(new HttpService(bscTestnetUrl));
 
-        // 토큰 보낼 지갑 주소 준비
+        // 토큰을 받을 지갑 주소
         String toAddress = "0x658b8a1ae242d0460d4777e17C9Af438dAAB4f77";
 
-        String value = "1"; // 보낼 토큰 수량 1개
-        BigInteger weiValue = Convert.toWei(value, Convert.Unit.ETHER).toBigInteger(); // wei로 단위 변환
+        // 전송할 토큰 수량 설정
+        String value = "1"; // 1개 토큰 전송
+        // ERC20 토큰도 18자리 소수점을 사용하므로 wei 단위로 변환 필요
+        BigInteger weiValue = Convert.toWei(value, Convert.Unit.ETHER).toBigInteger();
 
+        // 개인키로 지갑 인증 정보 생성
         Credentials credentials = Credentials.create(privateKey);
 
-        // Chain Id - 네트워크를 구분하는 고유 번호
+        // BSC 테스트넷 체인 ID (네트워크 식별자)
         long bscTestnetChainId = 97L;
 
-        // RawTransactionManager - Chain Id를 포함한 트랜잭션을 생성하는 매니저
-        // 이를 통해 트랜잭션에 자동으로 Chain Id가 포함되어 보안성 확보
+        // 트랜잭션 매니저 생성
+        // - Chain ID를 포함하여 리플레이 공격 방지
+        // - EIP-155 표준을 따라 트랜잭션 서명
         RawTransactionManager txManager = new RawTransactionManager(web3, credentials, bscTestnetChainId);
 
-        // 테스트용 가스비 설정
-        // BSC는 이더리움보다 훨씬 저렴, 낮은 가격으로 가스비 설정 가능
+        // 가스 설정 (트랜잭션 수수료)
+        // BSC는 이더리움 대비 저렴한 가스비 제공
         StaticGasProvider gasProvider = getStaticGasProvider();
 
-        // 컨트랙트를 로드하기
-        // STRC의 토큰 컨트랙트 주소
-        // https://testnet.bscscan.com/token/0xff9f57987acb440c9752ab3f0af4d00ea1d97d89
-        String contractAddress = "0xfF9F57987Acb440C9752ab3F0Af4D00EA1d97d89";
-        // 메타마스크에서 STRC 토큰 조회하려면 '토큰 가져오기' 해야 함
+        // ERC20 토큰 컨트랙트 주소
+        String contractAddress = "0xfF9F57987Acb440C9752ab3F0Af4D00EA1d97d89"; // STRC 토큰
+        // BSC 테스트넷 탐색기 : https://testnet.bscscan.com/token/0xff9f57987acb440c9752ab3f0af4d00ea1d97d89
+        // 메타마스크에서 토큰 확인: '토큰 가져오기'로 컨트랙트 주소 추가 필요
 
-        ERC20 contract = ERC20.load(contractAddress, web3, txManager,gasProvider);
+        // ERC20 컨트랙트 인스턴스 로드
+        // Web3j가 자동 생성한 ERC20 래퍼 클래스 사용
+        ERC20 contract = ERC20.load(contractAddress, web3, txManager, gasProvider);
 
-        // 토큰 전송 실행
-        TransactionReceipt transactionReceipt = contract.transfer(toAddress, weiValue).send(); // 동기 방식
+        // ERC20 토큰 전송 실행
+        // transfer(address to, uint256 amount) 함수 호출
+        TransactionReceipt transactionReceipt = contract.transfer(toAddress, weiValue).send();
+        // (참고) .send(): 동기 방식 (결과를 기다림)
+        // (참고) .sendAsync(): 비동기 방식 (즉시 반환)
 
-        System.out.println("transactionReceipt = " + transactionReceipt);
+        // 트랜잭션 결과 출력
+        System.out.println("=== ERC20 토큰 전송 완료 ===");
+        System.out.println("트랜잭션 해시 : " + transactionReceipt.getTransactionHash());
+        System.out.println("블록 번호 : " + transactionReceipt.getBlockNumber());
+        System.out.println("가스 사용량 : " + transactionReceipt.getGasUsed());
+        System.out.println("상태 : " + (transactionReceipt.isStatusOK() ? "성공" : "실패"));
+        System.out.println("\n전체 영수증 :");
+        System.out.println(transactionReceipt);
 
         /*
         실행 결과
@@ -111,6 +141,5 @@ public class ERC20TokenTransfer {
 
 - 토큰은 ERC20.transfer()로 전송 가능
     - transfer() 시에는 파라미터를 wei 단위로 입력해야 함
-
 
  */

@@ -12,6 +12,11 @@ public class PrivateKeySignGenerate {
 
     /**
      * 1.3 Private Key로 서명 생성
+     * 
+     * 디지털 서명의 목적:
+     * - 메시지 인증: 서명자가 실제로 메시지를 작성했음을 증명
+     * - 무결성 보장: 메시지가 변조되지 않았음을 보장
+     * - 부인 방지: 서명자가 서명 사실을 부인할 수 없음
      */
 
     public static void main(String[] args) throws SignatureException {
@@ -20,9 +25,12 @@ public class PrivateKeySignGenerate {
 
         // Private key로 서명을 위한 Credentials 생성
         Credentials credentials = Credentials.create(privateKey);
+        System.out.println("서명자 주소: " + credentials.getAddress());
 
-        // 메시지 서명
+        // 메시지 서명 (ECDSA 알고리즘 사용)
         String message = "This message is for test.";
+        System.out.println("원본 메시지: " + message);
+        
         SignatureData signatureData = Sign.signMessage(message.getBytes(), credentials.getEcKeyPair());
 
         System.out.println("=== 서명 구성 요소 ===");
@@ -50,11 +58,15 @@ public class PrivateKeySignGenerate {
         // Keys.getAddress() 메서드는 0x 접두사 없이 반환
         String address = Numeric.prependHexPrefix(Keys.getAddress(publicKeyBigInt));
 
-        System.out.println(address); // todo
-        System.out.println(credentials.getAddress());
+        System.out.println("\n=== 서명 검증 ===");
+        System.out.println("복구된 주소: " + address);
+        System.out.println("원본 주소: " + credentials.getAddress());
+        
         // 서명자의 주소가 복구된 주소와 일치하는지 확인
         if (address.equals(credentials.getAddress())) {
-            System.out.println("일치");
+            System.out.println("✓ 서명 검증 성공: 주소가 일치합니다.");
+        } else {
+            System.out.println("✗ 서명 검증 실패: 주소가 일치하지 않습니다.");
         }
 
     }
@@ -63,14 +75,14 @@ public class PrivateKeySignGenerate {
 
 
         /*
-
-        WalletGenerate - [main 클래스 실행 결과]
-
-        --- 지갑 주소 생성 시작 ---
-        생성된 지갑 주소 = 0x658b8a1ae242d0460d4777e17c9af438daab4f77
-        --- 지갑 주소 생성 완료 ---
-        --- Private Key, Public Key 확인 ---
-        privateKey = 0x4acdd58a6ccf6f4eceb0b158726689e0ad21beb7afabe2262a8790b39b55ca85
-        publicKey = 0x376db746fb37456556a2c0018d876fbc5e61f9d60dec7f9f21132b2d7a19e71d5a7b81bcd29ded77b7b489f2e0e043998e385809f9779133938065190f351a91
-
+         * 디지털 서명 과정 요약:
+         * 1. 메시지 + 개인키 → ECDSA 서명 생성 (r, s, v)
+         * 2. 서명 + 메시지 → 공개키 복구
+         * 3. 공개키 → 주소 추출
+         * 4. 추출된 주소와 원본 주소 비교로 검증
+         * 
+         * 블록체인에서의 활용:
+         * - 트랜잭션 서명: 자산 전송 시 소유권 증명
+         * - 메시지 서명: 신원 인증 및 데이터 무결성 보장
+         * - 스마트 컨트랙트: 함수 호출 권한 검증
          */
